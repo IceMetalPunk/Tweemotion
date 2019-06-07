@@ -2,12 +2,14 @@ const dotenv = require('dotenv').config();
 const express = require('express');
 const Twitter = require('twitter');
 const ws = require('ws');
+const Sentimental = require('Sentimental');
 const server = express();
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || '8080';
+const WS_PORT = String(Number(PORT) + 1);
 server.use(express.static('public'));
 
-const socketServer = ws.Server({port: PORT});
+const socketServer = new ws.Server({port: WS_PORT});
 
 const twitter = new Twitter({
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -18,6 +20,9 @@ const twitter = new Twitter({
 
 const receiveData = function(event, socket) {
   if (event && event.text) {
+    let content = event.text.replace(/[@#][A-Za-z0-9_-]+/g, '');
+    console.log(content);
+    console.log(Sentimental.analyze(content).score);
     socket.send(JSON.stringify({
       tweetText: event.text // TODO: Replace with sentiment analysis
     }));
