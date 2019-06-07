@@ -25,11 +25,17 @@ const receiveData = function(event, socket) {
 };
 
 socketServer.on('connection', socket => {
+  socket.streamas = [];
   socket.on('message', message => {
     const data = JSON.parse(message);
     const tweetStream = twitter.stream('statuses/filter', {track: data.query});
     tweetStream.on('data', tweets => receiveData(tweets, socket));
+    socket.streams.push(tweetStream);
   });
+
+  socket.on('close', () => {
+    socket.streams.forEach(stream => stream.destroy());
+  })
 });
 
 server.listen(PORT, () => {
