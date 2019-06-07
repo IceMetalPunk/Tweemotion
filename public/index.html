@@ -2,9 +2,16 @@
   <head>
     <meta charset="UTF-8">
     <title>Tweemotion</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <script src="./js/main.js"></script>
   </head>
   <body>
-    Welcome to the future site of Tweemotion, a Twitter sentiment analysis web app.
+    Welcome to the future site of Tweemotion, a Twitter sentiment analysis web app.<br>
+    <div id="score-wrapper">
+      <span id="display-score">--%</span> Positivity
+    </div>
+    <div id="display-tweet"></div>
+    <input id="query-field" type="text"><button id="set-query-btn">Set Query</button>
     <!-- TODO: Add web socket support and all the rest of the UI -->
   </body>
 </html>

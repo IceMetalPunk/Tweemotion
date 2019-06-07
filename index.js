@@ -21,16 +21,16 @@ const twitter = new Twitter({
 const receiveData = function(event, socket) {
   if (event && event.text) {
     let content = event.text.replace(/[@#][A-Za-z0-9_-]+/g, '');
-    console.log(content);
-    console.log(Sentimental.analyze(content).score);
     socket.send(JSON.stringify({
-      tweetText: event.text // TODO: Replace with sentiment analysis
+      text: event.text,
+      score: Sentimental.analyze(content).score,
+      from: event.user.screen_name
     }));
   }
 };
 
 socketServer.on('connection', socket => {
-  socket.streamas = [];
+  socket.streams = [];
   socket.on('message', message => {
     const data = JSON.parse(message);
     const tweetStream = twitter.stream('statuses/filter', {track: data.query});
@@ -40,7 +40,13 @@ socketServer.on('connection', socket => {
 
   socket.on('close', () => {
     socket.streams.forEach(stream => stream.destroy());
+    socket.streams = [];
   })
+});
+
+server.get('/api/port_info', (req, res) => {
+  const data = { PORT, WS_PORT };
+  res.send(JSON.stringify(data));
 });
 
 server.listen(PORT, () => {
