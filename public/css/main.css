@@ -7,3 +7,12 @@
 #display-tweet {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
+#display-tweet:not(.status):not(.error) {
+    color: #0000aa;
+}
+.status {
+    color: #00aa00;
+}
+.error {
+    color: #ff0000;
+}

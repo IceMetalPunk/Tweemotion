@@ -10,12 +10,21 @@ const setup = async function() {
     const tweets = [];
     let lastTweet = {};
 
+    const linkTweeter = function(tweet) {
+        const name = tweet.from;
+        if (name) {
+            return `<a href="https://twitter.com/${name}" target="_blank">@${name}</a>`;
+        }
+        return '@Anonymous';
+    };
+
     const refreshDisplay = function() {
         const sum = scores.reduce((total, value) => total + value, 0);
         const average = sum/scores.length;
         const percent = 100 * (average + 4) / 8;
         displayScore.textContent = `${percent.toFixed(1)}%`;
-        displayTweet.textContent = `"${lastTweet.text}" - @${lastTweet.from}`;
+        displayTweet.classList.remove('status');
+        displayTweet.innerHTML = `Recent tweet:<br>"${lastTweet.text}" - ${linkTweeter(lastTweet)}`;
     };
     
     let tweetRotator = null;
@@ -36,7 +45,7 @@ const setup = async function() {
     sock.addEventListener('message', mess => {
         const json = JSON.parse(mess.data);
         if (!json.from) {
-            json.from = 'Anonymous';
+            json.from = '';
         }
         tweets.push(json);
         if (tweets.length === 1 && tweetRotator === null) {
@@ -48,7 +57,16 @@ const setup = async function() {
     });
 
     submitButton.addEventListener('click', () => {
-        sock.send(JSON.stringify({query: searchField.value}));
+        const query = searchField.value.trim();
+        scores.length = 0;
+        tweets.length = 0;
+        lastTweet = {};
+        window.clearInterval(tweetRotator);
+        tweetRotator = null;
+        displayScore.textContent = `--%`;
+        displayTweet.classList.add('status');
+        displayTweet.textContent = `Waiting for tweets about ${query}...`;
+        sock.send(JSON.stringify({query}));
     });
 
 };
