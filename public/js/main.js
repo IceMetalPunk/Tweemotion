@@ -21,7 +21,7 @@ const setup = async function() {
     const refreshDisplay = function() {
         const sum = scores.reduce((total, value) => total + value, 0);
         const average = sum/scores.length;
-        const percent = 100 * (average + 4) / 8;
+        const percent = 100 * (average + 1.5) / 3;
         displayScore.textContent = `${percent.toFixed(1)}%`;
         displayTweet.classList.remove('status');
         displayTweet.innerHTML = `Recent tweet:<br>"${lastTweet.text}" - ${linkTweeter(lastTweet)}`;
@@ -44,6 +44,7 @@ const setup = async function() {
     sock.addEventListener('open', res => console.log('Connected!'));
     sock.addEventListener('message', mess => {
         const json = JSON.parse(mess.data);
+        console.log(json);
         if (!json.from) {
             json.from = '';
         }
@@ -52,7 +53,9 @@ const setup = async function() {
             updateLastTweet();
             tweetRotator = window.setInterval(updateLastTweet, 2000);
         }
-        scores.push(json.score);
+        if (json.score !== null) {
+            scores.push(json.score);
+        }
         refreshDisplay();
     });
 
@@ -68,6 +71,8 @@ const setup = async function() {
         displayTweet.textContent = `Waiting for tweets about ${query}...`;
         sock.send(JSON.stringify({query}));
     });
+    
+    window.addEventListener('unload', () => sock.close());
 
 };
 document.addEventListener('DOMContentLoaded', setup);
