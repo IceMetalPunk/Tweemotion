@@ -21,8 +21,7 @@ const setup = async function() {
     const refreshDisplay = function() {
         const sum = scores.reduce((total, value) => total + value, 0);
         const average = sum/scores.length;
-        const percent = 100 * (average + 1.5) / 3;
-        displayScore.textContent = `${percent.toFixed(1)}%`;
+        displayScore.textContent = `${average.toFixed(1)}%`;
         displayTweet.classList.remove('status');
         displayTweet.innerHTML = `Recent tweet:<br>"${lastTweet.text}" - ${linkTweeter(lastTweet)}`;
     };
@@ -44,19 +43,27 @@ const setup = async function() {
     sock.addEventListener('open', res => console.log('Connected!'));
     sock.addEventListener('message', mess => {
         const json = JSON.parse(mess.data);
-        console.log(json);
-        if (!json.from) {
-            json.from = '';
+        if (json.type === 'ping') {
+            console.log('Heartbeat');
+            sock.send(JSON.stringify({
+                type: 'pong'
+            }));
         }
-        tweets.push(json);
-        if (tweets.length === 1 && tweetRotator === null) {
-            updateLastTweet();
-            tweetRotator = window.setInterval(updateLastTweet, 2000);
+        else if (json.type === 'tweet') {
+            console.log(json.percent);
+            if (!json.from) {
+                json.from = '';
+            }
+            tweets.push(json);
+            if (tweets.length === 1 && tweetRotator === null) {
+                updateLastTweet();
+                tweetRotator = window.setInterval(updateLastTweet, 2000);
+            }
+            if (json.percent !== null) {
+                scores.push(json.percent);
+            }
+            refreshDisplay();
         }
-        if (json.score !== null) {
-            scores.push(json.score);
-        }
-        refreshDisplay();
     });
 
     submitButton.addEventListener('click', () => {
@@ -69,10 +76,17 @@ const setup = async function() {
         displayScore.textContent = `--%`;
         displayTweet.classList.add('status');
         displayTweet.textContent = `Waiting for tweets about ${query}...`;
-        sock.send(JSON.stringify({query}));
+        sock.send(JSON.stringify({type: 'search', query}));
     });
     
-    window.addEventListener('unload', () => sock.close());
+    window.addEventListener('beforeunload', () => {
+        console.log('Closing...');
+        sock.send(JSON.stringify({
+            type: 'kill'
+        }));
+        sock.close();
+        console.log('Unloading');
+    });
 
 };
 document.addEventListener('DOMContentLoaded', setup);
