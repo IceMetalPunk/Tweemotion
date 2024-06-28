@@ -27,8 +27,11 @@
   "dependencies": {
     "dotenv": "^8.0.0",
     "express": "^4.19.2",
+    "glob-parent": "^5.1.2",
     "node-nlp": "^4.27.0",
+    "novel-segment": "^2.7.101",
     "twitter": "^1.1.0",
-    "ws": "^7.5.10"
+    "ws": "^7.5.10",
+    "xlsx": "^0.18.5"
   }
 }
